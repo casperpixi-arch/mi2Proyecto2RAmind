@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+  >
+
+  <title>Realidad aumentada</title>
+
+  <!-- A-Frame -->
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+
+  <!-- MindAR -->
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+
+  <style>
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    body {
+      background: transparent;
+    }
+
+    /* La cámara debe quedar en el fondo */
+    video {
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover !important;
+      z-index: -2 !important;
+    }
+
+    /* Escena transparente encima de la cámara */
+    a-scene {
+      position: fixed !important;
+      top: 0;
+      left: 0;
+      width: 100% !important;
+      height: 100% !important;
+      z-index: 1;
+    }
+
+    .a-canvas {
+      background: transparent !important;
+    }
+
+    #mensaje {
+      position: fixed;
+      top: 15px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+
+      width: calc(100% - 40px);
+      max-width: 500px;
+      box-sizing: border-box;
+      padding: 12px 16px;
+
+      color: white;
+      background: rgba(0, 0, 0, 0.65);
+      border-radius: 12px;
+      text-align: center;
+      font-family: Arial, sans-serif;
+      font-size: 16px;
+
+      pointer-events: none;
+    }
+
+    #estado {
+      display: block;
+      margin-top: 6px;
+      color: #70ff93;
+      font-size: 14px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="mensaje">
+    Apunta la cámara hacia objetivo.jpg
+    <span id="estado">Iniciando cámara...</span>
+  </div>
+
+  <a-scene
+    mindar-image="
+      imageTargetSrc: ./objetivo.mind;
+      autoStart: true;
+      uiLoading: yes;
+      uiScanning: yes;
+      uiError: yes;
+      warmupTolerance: 5;
+      missTolerance: 5;
+    "
+    embedded
+    color-space="sRGB"
+    renderer="
+      colorManagement: true;
+      physicallyCorrectLights: true;
+      alpha: true;
+      antialias: true;
+    "
+    vr-mode-ui="enabled: false"
+    device-orientation-permission-ui="enabled: false"
+  >
+
+    <a-assets timeout="30000">
+      <a-asset-item
+        id="modelo3d"
+        src="./modelo.glb"
+      ></a-asset-item>
+    </a-assets>
+
+    <!-- Cámara de realidad aumentada -->
+    <a-camera
+      position="0 0 0"
+      look-controls="enabled: false"
+    ></a-camera>
+
+    <!-- Luces -->
+    <a-light
+      type="ambient"
+      color="#ffffff"
+      intensity="1.5"
+    ></a-light>
+
+    <a-light
+      type="directional"
+      color="#ffffff"
+      intensity="1"
+      position="1 2 3"
+    ></a-light>
+
+    <!-- Objetivo compilado dentro de objetivo.mind -->
+    <a-entity
+      id="objetivoAR"
+      mindar-image-target="targetIndex: 0"
+    >
+
+      <!-- Modelo que aparece al detectar objetivo.jpg -->
+      <a-gltf-model
+        id="modeloVisible"
+        src="#modelo3d"
+        position="0 0 0.1"
+        rotation="0 0 0"
+        scale="0.5 0.5 0.5"
+      ></a-gltf-model>
+
+    </a-entity>
+
+  </a-scene>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const escena = document.querySelector("a-scene");
+      const objetivo = document.querySelector(=
+          "Cámara lista. Busca la imagen objetivo.";
+      });
+
+      escena.addEventListener("arError", function (error) {
+        estado.textContent =
+          "No se pudo abrir la cámara. Revisa los permisos.";
+
+        console.error("Error de cámara:", error);
+      });
+
+      objetivo.addEventListener("targetFound", function () {
+        estado.textContent =
+          "Imagen encontrada. Mostrando modelo 3D.";
+      });
+
+      objetivo.addEventListener("targetLost", function () {
+        estado.textContent =
+          "Imagen perdida. Apunta nuevamente hacia objetivo.jpg.";
+      });
+
+      modelo.addEventListener("model-loaded", function () {
+        console.log("modelo.glb cargado correctamente");
+      });
+
+      modelo.addEventListener("model-error", function (error) {
+        estado.textContent =
+          "No se pudo cargar modelo.glb.";
+
+        console.error("Error del modelo GLB:", error);
+      });
+    });
+  </script>
+
+</body>
+</html>
