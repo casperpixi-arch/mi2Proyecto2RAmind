@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -8,7 +9,7 @@
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
   >
 
-  <title>Realidad aumentada</title>
+  <title>Prueba de realidad aumentada</title>
 
   <!-- A-Frame -->
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
@@ -25,8 +26,6 @@
       overflow: hidden;
     }
 
-    /* No colocar fondo negro ni modificar el z-index del video */
-
     #mensaje {
       position: fixed;
       top: 15px;
@@ -36,23 +35,21 @@
 
       width: calc(100% - 30px);
       max-width: 500px;
-      padding: 10px;
+      padding: 12px;
       box-sizing: border-box;
 
       color: white;
-      background-color: rgba(0, 0, 0, 0.65);
-      border-radius: 10px;
+      background: rgba(0, 0, 0, 0.7);
+      border-radius: 12px;
       text-align: center;
       font-family: Arial, sans-serif;
-      font-size: 16px;
-
       pointer-events: none;
     }
 
     #estado {
       display: block;
       margin-top: 5px;
-      color: #62ff89;
+      color: #70ff90;
       font-size: 14px;
     }
   </style>
@@ -61,7 +58,7 @@
 <body>
 
   <div id="mensaje">
-    Apunta la cámara hacia la imagen objetivo
+    Apunta hacia la imagen objetivo
     <span id="estado">Iniciando cámara...</span>
   </div>
 
@@ -72,17 +69,14 @@
       uiLoading: yes;
       uiScanning: yes;
       uiError: yes;
+      warmupTolerance: 5;
+      missTolerance: 5;
     "
+    embedded
     color-space="sRGB"
-    renderer="
-      colorManagement: true;
-      physicallyCorrectLights: true;
-      antialias: true;
-      alpha: true;
-    "
+    renderer="colorManagement: true; physicallyCorrectLights: true"
     vr-mode-ui="enabled: false"
     device-orientation-permission-ui="enabled: false"
-    embedded
   >
 
     <a-assets timeout="30000">
@@ -97,30 +91,36 @@
       look-controls="enabled: false"
     ></a-camera>
 
-    <a-light
-      type="ambient"
-      color="#ffffff"
-      intensity="2"
-    ></a-light>
-
-    <a-light
-      type="directional"
-      color="#ffffff"
-      intensity="1"
-      position="1 2 3"
-    ></a-light>
-
     <a-entity
       id="objetivoAR"
       mindar-image-target="targetIndex: 0"
     >
+
+      <!-- Cubo rojo para comprobar que reconoce el objetivo -->
+      <a-box
+        position="0 0 0.25"
+        rotation="0 45 0"
+        scale="0.4 0.4 0.4"
+        color="#ff0000"
+        animation="
+          property: rotation;
+          to: 0 405 0;
+          loop: true;
+          dur: 4000;
+          easing: linear;
+        "
+      ></a-box>
+
+      <!-- Modelo GLB -->
       <a-gltf-model
         id="modeloVisible"
         src="#modelo3d"
-        position="0 0 0.1"
+        position="0 0 0.15"
         rotation="0 0 0"
-        scale="0.5 0.5 0.5"
+        scale="0.1 0.1 0.1"
+        visible="false"
       ></a-gltf-model>
+
     </a-entity>
 
   </a-scene>
@@ -134,24 +134,24 @@
 
       escena.addEventListener("arReady", function () {
         estado.textContent =
-          "Cámara lista. Busca la imagen objetivo.";
+          "Cámara lista. Buscando la imagen objetivo...";
       });
 
       escena.addEventListener("arError", function (error) {
         estado.textContent =
-          "No se pudo iniciar la cámara. Revisa los permisos.";
+          "Error al iniciar la cámara.";
 
         console.error("Error de cámara:", error);
       });
 
       objetivo.addEventListener("targetFound", function () {
         estado.textContent =
-          "Imagen detectada. Modelo 3D visible.";
+          "Objetivo detectado. Debe aparecer el cubo rojo.";
       });
 
       objetivo.addEventListener("targetLost", function () {
         estado.textContent =
-          "Imagen perdida. Apunta nuevamente.";
+          "Objetivo perdido. Vuelve a apuntar hacia la imagen.";
       });
 
       modelo.addEventListener("model-loaded", function () {
@@ -160,9 +160,9 @@
 
       modelo.addEventListener("model-error", function (error) {
         estado.textContent =
-          "Error al cargar modelo.glb.";
+          "El objetivo funciona, pero modelo.glb tiene un error.";
 
-        console.error("Error del modelo:", error);
+        console.error("Error al cargar modelo.glb:", error);
       });
     });
   </script>
